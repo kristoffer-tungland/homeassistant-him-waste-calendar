@@ -14,6 +14,14 @@ CATEGORIES = [
     "glass_metall",
 ]
 
+CATEGORY_ICONS = {
+    "plast": "mdi:recycle",
+    "mat": "mdi:food-apple",
+    "papir": "mdi:file-document",
+    "rest": "mdi:trash-can",
+    "glass_metall": "mdi:bottle-wine",
+}
+
 MONTHS = {
     "januar": 1,
     "februar": 2,
