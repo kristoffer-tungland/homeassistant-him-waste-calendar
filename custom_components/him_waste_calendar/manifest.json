@@ -1,0 +1,11 @@
+{
+  "domain": "him_waste_calendar",
+  "name": "HIM Waste Calendar",
+  "version": "0.1.1",
+  "documentation": "https://github.com/openai/homeassistant-him-waste-calendar",
+  "issue_tracker": "https://github.com/openai/homeassistant-him-waste-calendar/issues",
+  "requirements": ["beautifulsoup4>=4.12.2"],
+  "codeowners": ["@openai"],
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}

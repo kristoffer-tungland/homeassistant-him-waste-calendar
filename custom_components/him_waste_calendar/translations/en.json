@@ -1,0 +1,12 @@
+{
+  "title": "HIM Waste Calendar",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "property_id": "Property ID"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "HIM Tømmekalender",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "property_id": "Eiendoms-ID"
+        }
+      }
+    }
+  }
+}
