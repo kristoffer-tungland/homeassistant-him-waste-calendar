@@ -40,7 +40,7 @@ class WasteCalendarEntity(CoordinatorEntity[WasteCalendarCoordinator]):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return default attributes for all sensors."""
-        last = getattr(self.coordinator, "last_update_success_time", None)
+        last = getattr(self.coordinator, "last_refresh", None)
         return {"last_refresh": last.isoformat() if last else None}
 
 
