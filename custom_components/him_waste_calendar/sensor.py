@@ -6,7 +6,7 @@ from datetime import date, datetime
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.const import STATE_UNKNOWN
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CATEGORIES, DOMAIN, CATEGORY_ICONS
@@ -26,7 +26,25 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     async_add_entities(entities)
 
 
-class WasteCategorySensor(CoordinatorEntity[WasteCalendarCoordinator], SensorEntity):
+class WasteCalendarEntity(CoordinatorEntity[WasteCalendarCoordinator]):
+    """Base class for HIM Waste Calendar entities."""
+
+    def __init__(self, coordinator: WasteCalendarCoordinator) -> None:
+        """Initialize the base entity."""
+        super().__init__(coordinator)
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, coordinator.property_id)},
+            name=f"HIM Waste Calendar {coordinator.property_id}",
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return default attributes for all sensors."""
+        last = self.coordinator.last_update_success_time
+        return {"last_refresh": last.isoformat() if last else None}
+
+
+class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
     """Sensor representing the next date for a specific category."""
 
     _attr_device_class = SensorDeviceClass.DATE
@@ -39,11 +57,19 @@ class WasteCategorySensor(CoordinatorEntity[WasteCalendarCoordinator], SensorEnt
         self._attr_icon = CATEGORY_ICONS.get(category)
 
     @property
-    def native_value(self) -> str | None:
-        return self.coordinator.data.get(self._category, STATE_UNKNOWN)
+    def native_value(self) -> date | None:
+        raw = self.coordinator.data.get(self._category)
+        if isinstance(raw, date):
+            return raw
+        if isinstance(raw, str):
+            try:
+                return datetime.strptime(raw, "%Y-%m-%d").date()
+            except ValueError:
+                return None
+        return None
 
 
-class WasteNextSensor(CoordinatorEntity[WasteCalendarCoordinator], SensorEntity):
+class WasteNextSensor(WasteCalendarEntity, SensorEntity):
     """Sensor showing the next waste collection of any type."""
 
     _attr_device_class = SensorDeviceClass.DATE
@@ -56,20 +82,23 @@ class WasteNextSensor(CoordinatorEntity[WasteCalendarCoordinator], SensorEntity)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return self.coordinator.data
+        attrs = super().extra_state_attributes
+        attrs.update(self.coordinator.data)
+        return attrs
 
     @property
-    def native_value(self) -> str | None:
+    def native_value(self) -> date | None:
         parsed: list[date] = []
         today = date.today()
         for value in self.coordinator.data.values():
-            try:
-                parsed.append(datetime.strptime(value, "%Y-%m-%d").date())
-            except (ValueError, TypeError):
-                continue
+            if isinstance(value, date):
+                parsed.append(value)
+            elif isinstance(value, str):
+                try:
+                    parsed.append(datetime.strptime(value, "%Y-%m-%d").date())
+                except ValueError:
+                    continue
         if not parsed:
-            return STATE_UNKNOWN
+            return None
         future = [d for d in parsed if d >= today]
-        if future:
-            return min(future).isoformat()
-        return min(parsed).isoformat()
+        return min(future or parsed)
