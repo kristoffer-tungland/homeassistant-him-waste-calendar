@@ -22,6 +22,14 @@ CATEGORY_ICONS = {
     "glass_metall": "mdi:bottle-wine",
 }
 
+CATEGORY_NAMES = {
+    "plast": "Plast",
+    "mat": "Mat",
+    "papir": "Papir",
+    "rest": "Rest",
+    "glass_metall": "Glass og metall",
+}
+
 MONTHS = {
     "januar": 1,
     "februar": 2,

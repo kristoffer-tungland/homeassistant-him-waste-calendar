@@ -9,7 +9,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CATEGORIES, DOMAIN, CATEGORY_ICONS
+from .const import CATEGORIES, DOMAIN, CATEGORY_ICONS, CATEGORY_NAMES
 from .coordinator import WasteCalendarCoordinator
 
 
@@ -34,7 +34,7 @@ class WasteCalendarEntity(CoordinatorEntity[WasteCalendarCoordinator]):
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.property_id)},
-            name=f"HIM Waste Calendar {coordinator.property_id}",
+            name="HIM Tømmekalender",
         )
 
     @property
@@ -52,7 +52,9 @@ class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
     def __init__(self, coordinator: WasteCalendarCoordinator, category: str) -> None:
         super().__init__(coordinator)
         self._category = category
-        self._attr_name = f"HIM next {category.replace('_', ' ')}"
+        self._attr_name = CATEGORY_NAMES.get(
+            category, category.replace("_", " ").title()
+        )
         self._attr_unique_id = f"{coordinator.property_id}_{category}"
         self._attr_icon = CATEGORY_ICONS.get(category)
 
@@ -76,7 +78,7 @@ class WasteNextSensor(WasteCalendarEntity, SensorEntity):
 
     def __init__(self, coordinator: WasteCalendarCoordinator) -> None:
         super().__init__(coordinator)
-        self._attr_name = "HIM next collection"
+        self._attr_name = "Neste tømming"
         self._attr_unique_id = f"{coordinator.property_id}_next"
         self._attr_icon = "mdi:calendar"
 
