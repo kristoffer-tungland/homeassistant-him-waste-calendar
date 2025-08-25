@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 import logging
 
 import async_timeout
@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.util import dt as dt_util
 
 from .const import CATEGORIES, DOMAIN, MONTHS
 
@@ -23,6 +24,7 @@ class WasteCalendarCoordinator(DataUpdateCoordinator[dict[str, str]]):
         """Initialize the coordinator."""
         self.property_id = property_id
         self.url = f"https://him.as/tommekalender/?eiendomId={property_id}"
+        self.last_refresh: datetime | None = None
         super().__init__(
             hass,
             _LOGGER,
@@ -65,4 +67,5 @@ class WasteCalendarCoordinator(DataUpdateCoordinator[dict[str, str]]):
             try_date = date(year, month, day)
             data[name] = try_date.isoformat()
 
+        self.last_refresh = dt_util.utcnow()
         return data
