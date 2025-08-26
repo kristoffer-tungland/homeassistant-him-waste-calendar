@@ -6,11 +6,9 @@ from datetime import date, datetime
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from .const import CATEGORIES, DOMAIN, CATEGORY_ICONS, CATEGORY_NAMES
 from .coordinator import WasteCalendarCoordinator
+from .entity import WasteCalendarEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities) -> None:
@@ -24,24 +22,6 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     entities.append(WasteNextSensor(coordinator))
 
     async_add_entities(entities)
-
-
-class WasteCalendarEntity(CoordinatorEntity[WasteCalendarCoordinator]):
-    """Base class for HIM Waste Calendar entities."""
-
-    def __init__(self, coordinator: WasteCalendarCoordinator) -> None:
-        """Initialize the base entity."""
-        super().__init__(coordinator)
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.property_id)},
-            name="HIM Tømmekalender",
-        )
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return default attributes for all sensors."""
-        last = getattr(self.coordinator, "last_refresh", None)
-        return {"last_refresh": last.isoformat() if last else None}
 
 
 class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
