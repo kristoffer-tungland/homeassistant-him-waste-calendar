@@ -33,9 +33,10 @@ class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
     def __init__(self, coordinator: WasteCalendarCoordinator, category: str) -> None:
         super().__init__(coordinator)
         self._category = category
-        self._attr_name = CATEGORY_NAMES.get(
+        name = CATEGORY_NAMES.get(
             category, category.replace("_", " ").title()
         )
+        self._attr_name = f"{name} sensor"
         self._attr_unique_id = f"{coordinator.property_id}_{category}"
         self._attr_icon = CATEGORY_ICONS.get(category)
 
