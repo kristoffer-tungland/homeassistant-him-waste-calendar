@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "him_waste_calendar"
 CONF_PROPERTY_ID = "property_id"
-PLATFORMS: list[str] = ["sensor"]
+PLATFORMS: list[str] = ["sensor", "calendar"]
 
 CATEGORIES = [
     "plast",
