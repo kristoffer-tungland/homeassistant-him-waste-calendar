@@ -23,11 +23,11 @@ CATEGORY_ICONS = {
 }
 
 CATEGORY_NAMES = {
-    "plast": "Plast",
-    "mat": "Mat",
-    "papir": "Papir",
-    "rest": "Rest",
-    "glass_metall": "Glass og metall",
+    "plast": "Plastavfall",
+    "mat": "Matavfall",
+    "papir": "Papiravfall",
+    "rest": "Restavfall",
+    "glass_metall": "Glass og metallavfall",
 }
 
 MONTHS = {
