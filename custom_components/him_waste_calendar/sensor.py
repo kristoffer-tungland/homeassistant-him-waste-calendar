@@ -36,7 +36,7 @@ class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
         name = CATEGORY_NAMES.get(
             category, category.replace("_", " ").title()
         )
-        self._attr_name = f"{name} sensor"
+        self._attr_name = name
         self._attr_unique_id = f"{coordinator.property_id}_{category}"
         self._attr_icon = CATEGORY_ICONS.get(category)
 
