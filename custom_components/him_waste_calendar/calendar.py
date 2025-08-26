@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, time
+from datetime import date, datetime, timedelta
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
-from homeassistant.util import dt as dt_util
 
 from .const import CATEGORY_ICONS, CATEGORY_NAMES, CATEGORIES, DOMAIN
 from .coordinator import WasteCalendarCoordinator
@@ -28,9 +27,10 @@ class WasteCalendar(WasteCalendarEntity, CalendarEntity):
     def __init__(self, coordinator: WasteCalendarCoordinator, category: str) -> None:
         super().__init__(coordinator)
         self._category = category
-        self._attr_name = CATEGORY_NAMES.get(
+        name = CATEGORY_NAMES.get(
             category, category.replace("_", " ").title()
         )
+        self._attr_name = f"{name} kalender"
         self._attr_unique_id = f"{coordinator.property_id}_{category}_calendar"
         self._attr_icon = CATEGORY_ICONS.get(category)
 
@@ -49,8 +49,8 @@ class WasteCalendar(WasteCalendarEntity, CalendarEntity):
         d = self._get_date()
         if not d:
             return None
-        start = datetime.combine(d, time.min).replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
-        end = start + timedelta(days=1)
+        start = d
+        end = d + timedelta(days=1)
         return CalendarEvent(summary=self._attr_name, start=start, end=end)
 
     @property
@@ -61,6 +61,6 @@ class WasteCalendar(WasteCalendarEntity, CalendarEntity):
         self, hass, start_date: datetime, end_date: datetime
     ) -> list[CalendarEvent]:
         ev = self._build_event()
-        if ev and ev.start < end_date and ev.end > start_date:
+        if ev and ev.start < end_date.date() and ev.end > start_date.date():
             return [ev]
         return []
