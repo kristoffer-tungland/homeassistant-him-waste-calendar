@@ -1,6 +1,6 @@
 # HIM Waste Calendar
 
-Custom Home Assistant integration that scrapes HIM's waste calendar website and exposes pickup dates as sensors.
+Custom Home Assistant integration that scrapes HIM's waste calendar website and exposes pickup dates as sensors and a unified calendar.
 
 ## Installation
 
@@ -10,6 +10,6 @@ Custom Home Assistant integration that scrapes HIM's waste calendar website and 
 
 ## Configuration
 
-Use the configuration flow and enter your property ID when prompted. The easiest way to find your property ID is to visit [him.no](https://him.no), search for your address and copy the `eiendomId` value from the browser's address bar. The integration will create one sensor per waste category and an aggregate sensor showing the next upcoming collection.
+Use the configuration flow and enter your property ID when prompted. The easiest way to find your property ID is to visit [him.no](https://him.no), search for your address and copy the `eiendomId` value from the browser's address bar. The integration will create one sensor per waste category, an aggregate sensor showing the next upcoming collection, and a single calendar entity collecting all categories.
 
 All sensors for a property are grouped under a single device in Home Assistant and expose a `last_refresh` attribute indicating when data was last updated.
