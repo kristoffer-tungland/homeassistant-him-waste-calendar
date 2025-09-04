@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
+from typing import Any
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 
-from .const import CATEGORY_NAMES, DOMAIN
+from .const import CATEGORY_ICONS, CATEGORY_NAMES, DOMAIN
 from .coordinator import WasteCalendarCoordinator
 from .entity import WasteCalendarEntity
 
@@ -15,6 +17,22 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     """Set up calendar entities from a config entry."""
     coordinator: WasteCalendarCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([WasteCollectionCalendar(coordinator)])
+
+
+@dataclass
+class WasteCalendarEvent(CalendarEvent):
+    """CalendarEvent with support for icon and category attributes."""
+
+    icon: str | None = None
+    attributes: dict[str, bool] = field(default_factory=dict)
+
+    def as_dict(self) -> dict[str, Any]:  # noqa: D401 - override
+        """Return a dict representation of the event."""
+        data = super().as_dict()
+        if self.attributes:
+            data.update(self.attributes)
+        data.pop("attributes", None)
+        return data
 
 
 class WasteCollectionCalendar(WasteCalendarEntity, CalendarEntity):
@@ -55,11 +73,17 @@ class WasteCollectionCalendar(WasteCalendarEntity, CalendarEntity):
         desc = ", ".join(
             CATEGORY_NAMES.get(c, c.replace("_", " ").title()) for c in cats
         )
-        return CalendarEvent(
+        icon = (
+            CATEGORY_ICONS.get(cats[0]) if len(cats) == 1 else self._attr_icon
+        )
+        attrs = {cat: True for cat in cats}
+        return WasteCalendarEvent(
             summary=self._attr_name,
             start=start,
             end=end,
             description=desc,
+            icon=icon,
+            attributes=attrs,
         )
 
     @property
