@@ -42,7 +42,7 @@ class WasteCollectionCalendar(WasteCalendarEntity, CalendarEntity):
         super().__init__(coordinator)
         self._attr_name = "Avfallstømming"
         self._attr_unique_id = f"{coordinator.property_id}_collection_calendar"
-        self._attr_icon = "mdi:trash-can-clock"
+        self._attr_icon = "mdi:recycle"
 
     def _events_by_date(self) -> dict[date, list[str]]:
         events: dict[date, list[str]] = {}
