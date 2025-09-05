@@ -63,16 +63,26 @@ class WasteCalendarCoordinator(DataUpdateCoordinator[dict[str, str]]):
                     if date_elem is None:
                         raise ValueError(f"Missing date element for {name}")
                     txt = date_elem.get_text(strip=True).lower()
-                    parts = txt.split(".")
-                    if len(parts) < 2:
-                        raise ValueError(f"Unable to parse date for {name}: {txt}")
-                    day = int(parts[0])
-                    month_name = parts[-1].strip()
-                    month = MONTHS.get(month_name)
-                    if not month or day <= 0:
-                        raise ValueError(f"Invalid date for {name}: {txt}")
-                    year = today.year
-                    try_date = date(year, month, day)
+
+                    if txt == "i dag":
+                        try_date = today
+                    elif txt == "i morgen":
+                        try_date = today + timedelta(days=1)
+                    else:
+                        parts = txt.split(".")
+                        if len(parts) < 2:
+                            raise ValueError(
+                                f"Unable to parse date for {name}: {txt}"
+                            )
+                        day = int(parts[0])
+                        month_name = parts[-1].strip()
+                        month = MONTHS.get(month_name)
+                        if not month or day <= 0:
+                            raise ValueError(
+                                f"Invalid date for {name}: {txt}"
+                            )
+                        year = today.year
+                        try_date = date(year, month, day)
                     data[name] = try_date.isoformat()
 
                 self.last_refresh = dt_util.utcnow()
