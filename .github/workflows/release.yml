@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  pull_request_target:
+    branches: [ main ]
+    types: [ closed ]
+
+# Ensure the workflow can push commits and create releases
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+
+      - name: Determine next version
+        id: next_version
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let latestRelease;
+            try {
+              latestRelease = await github.rest.repos.getLatestRelease({ owner, repo });
+            } catch (error) {
+              if (error.status === 404) {
+                latestRelease = null;
+              } else {
+                throw error;
+              }
+            }
+
+            let newTag;
+            if (!latestRelease) {
+              newTag = 'v0.0.1';
+            } else {
+              const tag = latestRelease.data.tag_name;
+              const match = tag && tag.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+              if (!match) {
+                throw new Error(`Latest release tag ${tag} is not in the expected v0.0.1 format.`);
+              }
+              const [major, minor, patch] = match.slice(1).map(Number);
+              newTag = `v${major}.${minor}.${patch + 1}`;
+            }
+
+            core.setOutput('tag', newTag);
+            core.setOutput('version', newTag.slice(1));
+
+      - name: Update manifest version
+        run: |
+          python <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('custom_components/him_waste_calendar/manifest.json')
+          data = json.loads(p.read_text())
+          data['version'] = '${{ steps.next_version.outputs.version }}'
+          p.write_text(json.dumps(data, indent=2) + '\n')
+          PY
+
+      - name: Commit & push manifest update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add custom_components/him_waste_calendar/manifest.json
+          if git diff --cached --quiet; then
+            echo "No manifest changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: bump manifest version to ${{ steps.next_version.outputs.version }}"
+
+          # Re-auth with a token that has write access
+          git remote set-url origin \
+            https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
+          # Push to the base branch (main) that the PR targeted
+          git push origin HEAD:${{ github.event.pull_request.base.ref }}
+
+      - name: Create release (auto notes)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.next_version.outputs.tag }}
+          name: ${{ steps.next_version.outputs.tag }}
+          target_commitish: ${{ github.event.pull_request.merge_commit_sha }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
