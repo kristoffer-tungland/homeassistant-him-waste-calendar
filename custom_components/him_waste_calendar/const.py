@@ -7,10 +7,10 @@ CONF_PROPERTY_ID = "property_id"
 PLATFORMS: list[str] = ["sensor", "calendar"]
 
 CATEGORIES = [
-    "plast",
+    "rest",
     "mat",
     "papir",
-    "rest",
+    "plast",
     "glass_metall",
 ]
 
