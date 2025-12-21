@@ -24,6 +24,19 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     async_add_entities(entities)
 
 
+def _ensure_future_date(d: date, today: date) -> date:
+    """Ensure the date is not in the past by rolling it forward yearly."""
+
+    candidate = d
+    while candidate < today:
+        try:
+            candidate = candidate.replace(year=candidate.year + 1)
+        except ValueError:
+            # Handle leap day on non-leap years by moving to March 1st
+            candidate = date(candidate.year + 1, 3, 1)
+    return candidate
+
+
 class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
     """Sensor representing the next date for a specific category."""
 
@@ -55,14 +68,19 @@ class WasteCategorySensor(WasteCalendarEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         attrs = super().extra_state_attributes
         d = self._get_date()
-        attrs["date"] = d.isoformat() if d else None
+        if d:
+            d = _ensure_future_date(d, date.today())
+            attrs["date"] = d.isoformat()
+        else:
+            attrs["date"] = None
         return attrs
 
     @property
     def native_value(self) -> int | None:
         d = self._get_date()
         if d:
-            return (d - date.today()).days
+            future_date = _ensure_future_date(d, date.today())
+            return (future_date - date.today()).days
         return None
 
 
@@ -91,8 +109,8 @@ class WasteNextSensor(WasteCalendarEntity, SensorEntity):
                     continue
         if not parsed:
             return None
-        future = [d for d in parsed if d >= today]
-        return min(future or parsed)
+        adjusted = [_ensure_future_date(d, today) for d in parsed]
+        return min(adjusted)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
